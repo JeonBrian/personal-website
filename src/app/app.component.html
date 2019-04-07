@@ -1,21 +1,9 @@
 <ul class="nav">
   <li class="nav-item">
-    <a class="nav-link active" href="/">Home</a>
+    <a class="nav-link" routerLink="/" routerLinkActive="active">Home</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link" href="/typing-test">Typing Test</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="/about">About</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Login</a>
+    <a class="nav-link" routerLink="/typing-test" routerLinkActive="active">Typing Test</a>
   </li>
 </ul>
-<div class="jumbotron jumbotron-fluid">
-    <div class="container">
-      <h1 class="display-4">Brian Jeon</h1>
-      <p class="lead">Welcome to my website. Have fun!</p>
-    </div>
-  </div>
 <router-outlet></router-outlet>
