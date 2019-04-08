@@ -1,26 +1,38 @@
 <div class="test-container">
   <div class="test-stats">
     <div class="d-flex">
-      <div class="stat">
-        Time: 00:00
-      </div>
-      <div class="stat">
-        WPM: 0
-      </div>
-      <div class="stat">
-        Accuracy: 100%
-      </div>
+      <div class="stat">Time: 00:{{ timeLeft }}</div>
+      <div class="stat">WPM: {{ stats.wpm }}</div>
+      <div class="stat">Accuracy: {{ stats.accuracy }}%</div>
     </div>
+  </div>
+  <div class="progress">
+    <div
+      class="progress-bar bg-success"
+      [ngClass]="'w-' + timeProgress"
+      role="progressbar"
+      aria-valuenow="75"
+      aria-valuemin="0"
+      aria-valuemax="100"
+    ></div>
   </div>
   <div class="test-area">
     <span>
-      <span class="cursor">A</span>
-      <span>
-        {{ activeStory.content }}
+      <span
+        *ngFor="let character of activeStory.characters; let i = index"
+        [ngClass]="{
+          cursor: i === activeStory.cursorIndex,
+          incorrect: character.state === 'incorrect',
+          correct: character.state === 'correct'
+        }"
+        [innerHTML]="character.display"
+      >
       </span>
     </span>
   </div>
 </div>
 <br />
-LastKey: {{ lastKey }}<br />
-Active: {{ active }}
+<!-- LastKey: {{ lastKey }}<br />
+Incorrect: {{ stats.incorrect }}<br />
+Correct: {{ stats.correct }}<br />
+Time elapsed: {{ stats.timeElapsed }}<br /> -->

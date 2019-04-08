@@ -17,16 +17,29 @@
     }
   }
 
+  .progress {
+    height: 4px;
+  }
+
   .test-area {
     padding: 16px;
     font-family: 'Inconsolata', monospace;
     color: #333;
 
+    .correct {
+      background-color: #ecffec;
+    }
+
+    .incorrect {
+      background-color: red;
+      color: #fff;
+    }
+
     .cursor {
       background-color: #00ca00;
       color: #fff;
       -webkit-animation: example 1s steps(1) infinite; /* Safari 4.0 - 8.0 */
-      animation: example 1.5s steps(1) infinite;
+      animation: example 1.2s steps(1) infinite;
 
       /* Safari 4.0 - 8.0 */
       @-webkit-keyframes example {
@@ -47,8 +60,8 @@
           color: #fff;
         }
         50% {
-          background-color: #51d851;
-          color: #fff;
+          background-color: transparent;
+          color: #333;
         }
       }
     }
