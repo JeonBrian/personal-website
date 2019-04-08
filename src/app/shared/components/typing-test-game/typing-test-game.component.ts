@@ -25,7 +25,8 @@ export class TypingTestGameComponent implements OnInit {
   public timeLeft: number;
   public timeLimit: number;
   public timeProgress: number;
-  private timer: NodeJS.Timer;
+  // TODO: Replace with NodeJS.Timer
+  private timer: any;
 
   constructor(public typingTestGameService: TypingTestGameService) {
     this.active = true;
