@@ -3,8 +3,11 @@ import { TypingTestGameService } from '../../services/typing-test-game/typing-te
 import {
   StoryInterface,
   ActiveStoryInterface,
-  CharacterInterface
+  CharacterInterface,
+  WordInterface,
+  ParagraphInterface
 } from '../../services/typing-test-game/typing-test-game.model';
+import { CHAR_CONSTANTS } from '../../services/typing-test-game/typing-test-game.constants';
 
 @Component({
   selector: 'app-typing-test-game',
@@ -29,10 +32,12 @@ export class TypingTestGameComponent implements OnInit {
     this.lastKey = '';
     this.stories = [];
     this.activeStory = {
-      characters: [],
+      paragraphs: [],
       name: '',
       content: '',
-      cursorIndex: 0
+      paragraphCursor: 0,
+      wordCursor: 0,
+      characterCursor: 0
     };
     this.stats = {
       incorrect: 0,
@@ -41,7 +46,7 @@ export class TypingTestGameComponent implements OnInit {
       wpm: 0,
       accuracy: 0
     };
-    this.timeLimit = 10;
+    this.timeLimit = 60;
     this.timeLeft = this.timeLimit;
     this.timeProgress = 100;
     this.gameStarted = false;
@@ -60,15 +65,28 @@ export class TypingTestGameComponent implements OnInit {
     const output: ActiveStoryInterface = {
       name: story.name,
       content: story.content,
-      characters: [],
-      cursorIndex: 0
+      paragraphs: [],
+      paragraphCursor: 0,
+      wordCursor: 0,
+      characterCursor: 0
     };
+    // Split story up into individual letters, then process them into words
     const storyArray = story.content.split('');
+    let newParagraph: ParagraphInterface = {
+      words: []
+    };
+    let newWord: WordInterface = {
+      characters: []
+    };
     storyArray.forEach(character => {
-      // Process content
+      // Process character content and state
+
       let display = character;
-      if (character === '^') {
-        display = '↵<br><br>';
+      if (character === CHAR_CONSTANTS.NEWLINE.alias) {
+        display = CHAR_CONSTANTS.NEWLINE.display;
+      } else if (character === CHAR_CONSTANTS.SPACE.alias) {
+        character = CHAR_CONSTANTS.SPACE.actual;
+        display = CHAR_CONSTANTS.SPACE.display;
       }
       const charState = 'pristine';
 
@@ -79,8 +97,25 @@ export class TypingTestGameComponent implements OnInit {
         entered: '',
         display
       };
-      output.characters.push(newChar);
+
+      // Add to word or words
+      // console.log(newChar.content + ' === ' + CHAR_CONSTANTS.NEWLINE.actual);
+      if (newChar.content === CHAR_CONSTANTS.NEWLINE.actual) {
+        newWord.characters.push(newChar);
+        newParagraph.words.push(newWord);
+        output.paragraphs.push(newParagraph);
+        newParagraph = { words: [] };
+        newWord = { characters: [] };
+      } else if (newChar.content === CHAR_CONSTANTS.SPACE.actual) {
+        newWord.characters.push(newChar);
+        newParagraph.words.push(newWord);
+        newWord = { characters: [] };
+      } else {
+        newWord.characters.push(newChar);
+      }
     });
+
+    console.log(output);
     return output;
   }
 
@@ -136,39 +171,46 @@ export class TypingTestGameComponent implements OnInit {
   }
 
   public keyEntered(key: string) {
+    // If it hasn't been already started, start the game and timer
     if (this.gameStarted === false) {
       this.gameStarted = true;
       this.startTimer();
     }
 
+    // Process input key to standard
     this.lastKey = key;
-    const currentCharacter = this.getActiveCharacter(0);
-    // Determine if key was correct
-    if (this.lastKey === 'Enter' && currentCharacter.content === '^') {
-      currentCharacter.state = 'correct';
-      this.stats.correct++;
-    } else if (this.lastKey !== currentCharacter.content) {
-      currentCharacter.state = 'incorrect';
-      this.stats.incorrect++;
-    } else {
-      currentCharacter.state = 'correct';
-      this.stats.correct++;
-    }
-    // Process what is entered as input
-    if (this.lastKey === ' ') {
-      currentCharacter.entered = '&nbsp';
-    } else if (this.lastKey === 'Enter') {
-      currentCharacter.entered = '^';
-    } else {
-      currentCharacter.entered = this.lastKey;
+    switch (this.lastKey) {
+      case 'Enter':
+        this.lastKey = CHAR_CONSTANTS.NEWLINE.actual;
+        break;
+      case ' ':
+        this.lastKey = CHAR_CONSTANTS.SPACE.actual;
+        break;
+      default:
+        break;
     }
 
+    const currentCharacter = this.getActiveCharacter(0);
+    // Determine if key was correct
+    if (keyIsCorrect(this.lastKey)) {
+      currentCharacter.state = 'correct';
+      this.stats.correct++;
+    } else {
+      currentCharacter.state = 'incorrect';
+      this.stats.incorrect++;
+    }
+    // Process what is entered as input
+    currentCharacter.entered = this.lastKey;
+
     // Special rendering for if the content was a newline.
-    if (currentCharacter.entered === '^' || currentCharacter.content === '^') {
+    if (
+      currentCharacter.entered === CHAR_CONSTANTS.NEWLINE.actual ||
+      currentCharacter.content === CHAR_CONSTANTS.NEWLINE.actual
+    ) {
       if (currentCharacter.state === 'correct') {
-        currentCharacter.display = '↵<br><br>';
+        currentCharacter.display = CHAR_CONSTANTS.NEWLINE.display;
       } else {
-        currentCharacter.display = '↵';
+        currentCharacter.display = CHAR_CONSTANTS.SPACE.display;
       }
     } else {
       currentCharacter.display = currentCharacter.entered;
@@ -178,30 +220,132 @@ export class TypingTestGameComponent implements OnInit {
     this.calculateStats();
 
     // Increment cursor
-    this.activeStory.cursorIndex++;
+    this.incrementCursor();
+
+    function keyIsCorrect(keyToCheck: string) {
+      const isIdentical = keyToCheck === currentCharacter.content;
+      return isIdentical;
+    }
   }
 
   public keyRemoved() {
-    const currentCharacter = this.getActiveCharacter(0);
-    const previousCharacter = this.getActiveCharacter(-1);
-    currentCharacter.state = 'pristine';
-    previousCharacter.entered = '';
-    previousCharacter.display =
-      previousCharacter.content === '^'
-        ? '↵<br><br>'
-        : previousCharacter.content;
-    if (previousCharacter.state === 'correct') {
-      this.stats.correct--;
-    } else if (previousCharacter.state === 'incorrect') {
-      this.stats.incorrect--;
-    }
+    if (
+      this.activeStory.characterCursor !== 0 ||
+      this.activeStory.wordCursor !== 0 ||
+      this.activeStory.paragraphCursor !== 0
+    ) {
+      const currentCharacter = this.getActiveCharacter(0);
+      const previousCharacter = this.getActiveCharacter(-1);
+      currentCharacter.state = 'pristine';
+      previousCharacter.entered = '';
+      previousCharacter.display =
+        previousCharacter.content === CHAR_CONSTANTS.NEWLINE.actual
+          ? CHAR_CONSTANTS.NEWLINE.display
+          : previousCharacter.content;
+      if (previousCharacter.state === 'correct') {
+        this.stats.correct--;
+      } else if (previousCharacter.state === 'incorrect') {
+        this.stats.incorrect--;
+      }
 
-    this.activeStory.cursorIndex--;
+      this.decrementCursor();
+    }
   }
 
   // If no index is provided, return current character at activeIndex
   private getActiveCharacter(index) {
-    index = this.activeStory.cursorIndex + index;
-    return this.activeStory.characters[index];
+    let paragraphCursor = this.activeStory.paragraphCursor;
+    let wordCursor = this.activeStory.wordCursor;
+    let characterCursor = this.activeStory.characterCursor;
+    // Detect character spillover
+    if (
+      characterCursor + index >
+      this.activeStory.paragraphs[paragraphCursor].words[wordCursor].characters
+        .length
+    ) {
+      // Character after this is in next word
+      wordCursor = wordCursor + 1;
+      characterCursor = 0;
+    } else if (characterCursor + index < 0) {
+      // Character before this is in previous word
+      wordCursor = wordCursor - 1;
+      if (wordCursor < 0) {
+        // Word before this is in previous word
+        paragraphCursor = paragraphCursor - 1;
+        wordCursor =
+          this.activeStory.paragraphs[paragraphCursor].words.length - 1;
+        characterCursor =
+          this.activeStory.paragraphs[paragraphCursor].words[wordCursor]
+            .characters.length - 1;
+      } else {
+        characterCursor =
+          this.activeStory.paragraphs[paragraphCursor].words[wordCursor]
+            .characters.length - 1;
+      }
+    } else {
+      characterCursor = characterCursor + index;
+    }
+    // Detect word spillover
+    if (
+      wordCursor > this.activeStory.paragraphs[paragraphCursor].words.length
+    ) {
+      paragraphCursor = paragraphCursor + 1;
+      wordCursor = 0;
+      characterCursor = 0;
+    }
+
+    return this.activeStory.paragraphs[paragraphCursor].words[wordCursor]
+      .characters[characterCursor];
+  }
+
+  private decrementCursor() {
+    let currentParagraph = this.activeStory.paragraphs[
+      this.activeStory.paragraphCursor
+    ];
+    const currentWord = currentParagraph.words[this.activeStory.wordCursor];
+    const currentCharacter = currentWord[this.activeStory.characterCursor];
+    // detect overflow into next word
+    if (this.activeStory.characterCursor - 1 < 0) {
+      this.activeStory.wordCursor--;
+      if (this.activeStory.wordCursor < 0) {
+        this.activeStory.paragraphCursor--;
+        currentParagraph = this.activeStory.paragraphs[
+          this.activeStory.paragraphCursor
+        ];
+        this.activeStory.wordCursor = currentParagraph.words.length - 1;
+      }
+      this.activeStory.characterCursor =
+        currentParagraph.words[this.activeStory.wordCursor].characters.length -
+        1;
+    } else {
+      this.activeStory.characterCursor--;
+    }
+
+    if (this.activeStory.wordCursor >= currentParagraph.words.length) {
+      this.activeStory.paragraphCursor++;
+      this.activeStory.wordCursor = 0;
+      this.activeStory.characterCursor = 0;
+    }
+  }
+
+  private incrementCursor() {
+    const currentParagraph = this.activeStory.paragraphs[
+      this.activeStory.paragraphCursor
+    ];
+    const currentWord = currentParagraph.words[this.activeStory.wordCursor];
+    const currentCharacter = currentWord[this.activeStory.characterCursor];
+    // detect overflow into next word
+    if (this.activeStory.characterCursor + 1 >= currentWord.characters.length) {
+      this.activeStory.wordCursor++;
+      this.activeStory.characterCursor = 0;
+    } else {
+      this.activeStory.characterCursor++;
+    }
+
+    if (this.activeStory.wordCursor >= currentParagraph.words.length) {
+      this.activeStory.paragraphCursor++;
+      this.activeStory.wordCursor = 0;
+      this.activeStory.characterCursor = 0;
+    }
   }
 }

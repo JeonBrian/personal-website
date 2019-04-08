@@ -6,8 +6,18 @@ export class StoryInterface {
 export class ActiveStoryInterface {
   name: string;
   content: string;
+  paragraphs: ParagraphInterface[];
+  paragraphCursor: number;
+  wordCursor: number;
+  characterCursor: number;
+}
+
+export class ParagraphInterface {
+  words: WordInterface[];
+}
+
+export class WordInterface {
   characters: CharacterInterface[];
-  cursorIndex: number;
 }
 
 export class CharacterInterface {
