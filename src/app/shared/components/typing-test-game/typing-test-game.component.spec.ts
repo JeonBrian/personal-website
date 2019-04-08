@@ -1,19 +1,19 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TypingTestComponent } from './typing-test.component';
+import { TypingTestGameComponent } from './typing-test-game.component';
 
-describe('TypingTestComponent', () => {
-  let component: TypingTestComponent;
-  let fixture: ComponentFixture<TypingTestComponent>;
+describe('TypingTestGameComponent', () => {
+  let component: TypingTestGameComponent;
+  let fixture: ComponentFixture<TypingTestGameComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [TypingTestComponent]
+      declarations: [TypingTestGameComponent]
     }).compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(TypingTestComponent);
+    fixture = TestBed.createComponent(TypingTestGameComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

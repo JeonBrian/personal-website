@@ -6,19 +6,18 @@ import { AppComponent } from './app.component';
 import { TypingTestComponent } from './typing-test/typing-test.component';
 import { HomeComponent } from './home/home.component';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
+import { TypingTestGameComponent } from './shared/components/typing-test-game/typing-test-game.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     TypingTestComponent,
     HomeComponent,
-    NavbarComponent
+    NavbarComponent,
+    TypingTestGameComponent
   ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule
-  ],
+  imports: [BrowserModule, AppRoutingModule],
   providers: [],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {}
