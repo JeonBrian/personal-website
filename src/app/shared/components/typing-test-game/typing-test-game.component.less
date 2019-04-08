@@ -1,7 +1,7 @@
 .test-container {
   background-color: #fafafa;
   color: #333;
-  cursor: pointer;
+  cursor: default;
 
   .test-stats {
     border-bottom: 1px solid #eee;
@@ -19,5 +19,38 @@
 
   .test-area {
     padding: 16px;
+    font-family: 'Inconsolata', monospace;
+    color: #333;
+
+    .cursor {
+      background-color: #00ca00;
+      color: #fff;
+      -webkit-animation: example 1s steps(1) infinite; /* Safari 4.0 - 8.0 */
+      animation: example 1.5s steps(1) infinite;
+
+      /* Safari 4.0 - 8.0 */
+      @-webkit-keyframes example {
+        0% {
+          background-color: #a7ffa7;
+          color: #fff;
+        }
+        50% {
+          background-color: transparent;
+          color: #333;
+        }
+      }
+
+      /* Standard syntax */
+      @keyframes example {
+        0% {
+          background-color: #00ca00;
+          color: #fff;
+        }
+        50% {
+          background-color: #51d851;
+          color: #fff;
+        }
+      }
+    }
   }
 }
