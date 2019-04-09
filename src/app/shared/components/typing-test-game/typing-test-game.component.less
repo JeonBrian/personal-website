@@ -25,53 +25,98 @@
 
   /* Test Area */
   .test-area {
-    padding: 16px;
     font-family: 'Inconsolata', monospace;
     font-size: 18px;
     color: #333;
     height: 300px;
     overflow: hidden;
+    position: relative;
 
-    .paragraph {
-      margin-bottom: 32px;
-    }
+    /* Loading screen behavior */
+    .test-content {
+      position: absolute;
+      top: 0%;
+      transition: top 0.7s cubic-bezier(0.25, 0.1, 0.25, 1);
 
-    .correct {
-      background-color: #ecffec;
-    }
+      &.gameLoaded {
+        top: -100%;
 
-    .incorrect {
-      background-color: red;
-      color: #fff;
-    }
-
-    .cursor {
-      background-color: #00ca00;
-      color: #fff;
-      -webkit-animation: example 1s steps(1) infinite; /* Safari 4.0 - 8.0 */
-      animation: example 1.2s steps(1) infinite;
-
-      /* Safari 4.0 - 8.0 */
-      @-webkit-keyframes example {
-        0% {
-          background-color: #a7ffa7;
-          color: #fff;
+        .test-text {
+          opacity: 100;
         }
-        50% {
-          background-color: transparent;
-          color: #333;
+      }
+    }
+
+    .loading-screen {
+      height: 300px;
+      width: 100%;
+      position: relative;
+
+      .loading-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-50%);
+        text-align: center;
+
+        .loading-text {
+          color: #aaa;
+        }
+      }
+    }
+
+    .test-text {
+      padding: 20px 20px;
+      transition: opacity 1s ease-out;
+      opacity: 0;
+
+      .paragraph {
+        margin-bottom: 32px;
+
+        &.isClosed {
+          height: 0;
+          margin-bottom: 0;
+          opacity: 0;
         }
       }
 
-      /* Standard syntax */
-      @keyframes example {
-        0% {
-          background-color: #00ca00;
-          color: #fff;
+      .correct {
+        background-color: #ecffec;
+      }
+
+      .incorrect {
+        background-color: red;
+        color: #fff;
+      }
+
+      .cursor {
+        background-color: #00ca00;
+        color: #fff;
+        -webkit-animation: example 1s steps(1) infinite; /* Safari 4.0 - 8.0 */
+        animation: example 1.2s steps(1) infinite;
+
+        /* Safari 4.0 - 8.0 */
+        @-webkit-keyframes example {
+          0% {
+            background-color: #a7ffa7;
+            color: #fff;
+          }
+          50% {
+            background-color: transparent;
+            color: #333;
+          }
         }
-        50% {
-          background-color: transparent;
-          color: #333;
+
+        /* Standard syntax */
+        @keyframes example {
+          0% {
+            background-color: #00ca00;
+            color: #fff;
+          }
+          50% {
+            background-color: transparent;
+            color: #333;
+          }
         }
       }
     }

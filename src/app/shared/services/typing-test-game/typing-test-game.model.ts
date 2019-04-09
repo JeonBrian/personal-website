@@ -13,6 +13,7 @@ export class ActiveStoryInterface {
 }
 
 export class ParagraphInterface {
+  isClosed: boolean;
   words: WordInterface[];
 }
 

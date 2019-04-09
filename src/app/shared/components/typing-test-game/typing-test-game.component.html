@@ -18,35 +18,53 @@
   </div>
   <div class="test-area d-flex flex-wrap">
     <div
-      *ngFor="let paragraph of activeStory.paragraphs; let i = index"
-      class="paragraph d-flex flex-wrap"
+      class="test-content"
+      [ngClass]="{
+        gameLoaded: gameLoaded
+      }"
     >
-      <div
-        *ngFor="let word of paragraph.words; let j = index"
-        class="word d-flex"
-      >
+      <div class="loading-screen">
+        <div class="loading-content">
+          <div class="loading-text">...</div>
+        </div>
+      </div>
+      <div class="test-text">
         <div
-          *ngFor="let character of word.characters; let k = index"
-          class="character"
+          *ngFor="let paragraph of activeStory.paragraphs; let i = index"
+          class="paragraph d-flex flex-wrap"
           [ngClass]="{
-            cursor:
-              i === activeStory.paragraphCursor &&
-              j === activeStory.wordCursor &&
-              k === activeStory.characterCursor,
-            incorrect: character.state === 'incorrect',
-            correct: character.state === 'correct',
-            pristine: character.state === 'pristine'
+            isClosed: paragraph.isClosed
           }"
-          [innerHTML]="character.display"
-        ></div>
+        >
+          <div
+            *ngFor="let word of paragraph.words; let j = index"
+            class="word d-flex"
+          >
+            <div
+              *ngFor="let character of word.characters; let k = index"
+              class="character"
+              [ngClass]="{
+                cursor:
+                  i === activeStory.paragraphCursor &&
+                  j === activeStory.wordCursor &&
+                  k === activeStory.characterCursor,
+                incorrect: character.state === 'incorrect',
+                correct: character.state === 'correct',
+                pristine: character.state === 'pristine'
+              }"
+              [innerHTML]="character.display"
+            ></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 <br />
+<!-- GAME LOADED: {{ gameLoaded }} <br />
 Paragraph: {{ activeStory.paragraphCursor }} Word:
 {{ activeStory.wordCursor }} Character:
 {{ activeStory.characterCursor }} LastKey: {{ lastKey }}<br />
 Incorrect: {{ stats.incorrect }}<br />
 Correct: {{ stats.correct }}<br />
-Time elapsed: {{ stats.timeElapsed }}<br />
+Time elapsed: {{ stats.timeElapsed }}<br /> -->

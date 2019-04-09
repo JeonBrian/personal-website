@@ -21,6 +21,8 @@ export class TypingTestGameComponent implements OnInit {
   public activeStory: ActiveStoryInterface;
   public stats: any;
   public gameStarted: boolean;
+  public gameLoaded: boolean;
+  public gameFinished: boolean;
 
   public timeLeft: number;
   public timeLimit: number;
@@ -51,18 +53,22 @@ export class TypingTestGameComponent implements OnInit {
     this.timeLeft = this.timeLimit;
     this.timeProgress = 100;
     this.gameStarted = false;
+    this.gameLoaded = false;
+    this.gameFinished = false;
   }
 
   ngOnInit() {
     this.typingTestGameService.getStories().subscribe((response: any) => {
       this.stories = response.data.stories;
       this.activeStory = this.processStory(this.stories[0]);
+      setTimeout(() => {
+        this.gameLoaded = true;
+      }, 500);
     });
   }
 
   // Process story object and parse its content into an array of Characters
   public processStory(story: StoryInterface): ActiveStoryInterface {
-    console.log(story);
     const output: ActiveStoryInterface = {
       name: story.name,
       content: story.content,
@@ -74,6 +80,7 @@ export class TypingTestGameComponent implements OnInit {
     // Split story up into individual letters, then process them into words
     const storyArray = story.content.split('');
     let newParagraph: ParagraphInterface = {
+      isClosed: false,
       words: []
     };
     let newWord: WordInterface = {
@@ -105,7 +112,7 @@ export class TypingTestGameComponent implements OnInit {
         newWord.characters.push(newChar);
         newParagraph.words.push(newWord);
         output.paragraphs.push(newParagraph);
-        newParagraph = { words: [] };
+        newParagraph = { isClosed: false, words: [] };
         newWord = { characters: [] };
       } else if (newChar.content === CHAR_CONSTANTS.SPACE.actual) {
         newWord.characters.push(newChar);
@@ -115,8 +122,6 @@ export class TypingTestGameComponent implements OnInit {
         newWord.characters.push(newChar);
       }
     });
-
-    console.log(output);
     return output;
   }
 
@@ -145,7 +150,17 @@ export class TypingTestGameComponent implements OnInit {
         this.stats.timeElapsed++;
         // this.timeProgress = Math.round((this.timeLeft / this.timeLimit) * 100);
         // console.log(this.timeProgress);
+
+        if (this.stats.timeElapsed % 1 === 0) {
+          // Calculate stats
+          this.calculateStats();
+        }
       } else {
+        // Game over!
+        this.gameFinished = true;
+        this.gameStarted = false;
+        this.gameLoaded = false;
+        this.calculateStats();
         clearInterval(this.timer);
       }
     }, 1000);
@@ -216,9 +231,6 @@ export class TypingTestGameComponent implements OnInit {
     } else {
       currentCharacter.display = currentCharacter.entered;
     }
-
-    // Calculate stats
-    this.calculateStats();
 
     // Increment cursor
     this.incrementCursor();
@@ -309,10 +321,12 @@ export class TypingTestGameComponent implements OnInit {
     if (this.activeStory.characterCursor - 1 < 0) {
       this.activeStory.wordCursor--;
       if (this.activeStory.wordCursor < 0) {
+        console.log('previous para');
         this.activeStory.paragraphCursor--;
         currentParagraph = this.activeStory.paragraphs[
           this.activeStory.paragraphCursor
         ];
+        currentParagraph.isClosed = false;
         this.activeStory.wordCursor = currentParagraph.words.length - 1;
       }
       this.activeStory.characterCursor =
@@ -334,7 +348,8 @@ export class TypingTestGameComponent implements OnInit {
       this.activeStory.paragraphCursor
     ];
     const currentWord = currentParagraph.words[this.activeStory.wordCursor];
-    const currentCharacter = currentWord[this.activeStory.characterCursor];
+    const currentCharacter: CharacterInterface =
+      currentWord.characters[this.activeStory.characterCursor];
     // detect overflow into next word
     if (this.activeStory.characterCursor + 1 >= currentWord.characters.length) {
       this.activeStory.wordCursor++;
@@ -347,6 +362,11 @@ export class TypingTestGameComponent implements OnInit {
       this.activeStory.paragraphCursor++;
       this.activeStory.wordCursor = 0;
       this.activeStory.characterCursor = 0;
+    }
+
+    // If current character is newline, then mark current paragraph as closed
+    if (currentCharacter.content === CHAR_CONSTANTS.NEWLINE.actual) {
+      currentParagraph.isClosed = true;
     }
   }
 }
